@@ -22,3 +22,16 @@ def generate_words(n=20):
         words.append(word)
 
     return words
+
+
+def main(path: str) -> None:
+    words = generate_words()
+    with open(path + '/file1.txt', 'x', encoding='utf-8') as file:
+        file.write('\n'.join(words))
+    with open(path + '/file2.txt', 'x', encoding='cp1252') as file:
+        words.reverse()
+        file.write(','.join(words))
+
+
+if __name__ == '__main__':
+    main('./practice/2_python_part_2')

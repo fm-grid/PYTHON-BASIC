@@ -13,3 +13,25 @@ Example:
 
     result.txt(content: "23, 78, 3")
 """
+import os
+
+
+def extract_key(filename: str) -> int: # 'file_42.txt' -> 42
+    suffix = filename.split('_')[-1]
+    number = suffix.split('.')[0]
+    return int(number)
+
+
+def main(path: str) -> None:
+    filenames = os.listdir(path)
+    filenames = sorted(filenames, key=extract_key)
+    contents = []
+    for filename in filenames:
+        with open(path + '/' + filename) as file:
+            contents.append(file.read())
+    with open(path + '/result.txt', 'x') as file:
+        file.write(', '.join(contents))
+
+
+if __name__ == '__main__':
+    main('./practice/2_python_part_2/files')

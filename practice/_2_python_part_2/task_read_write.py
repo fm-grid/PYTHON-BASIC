@@ -14,6 +14,7 @@ Example:
     result.txt(content: "23, 78, 3")
 """
 import os
+from pathlib import Path
 
 
 def extract_key(filename: str) -> int: # 'file_42.txt' -> 42
@@ -22,16 +23,17 @@ def extract_key(filename: str) -> int: # 'file_42.txt' -> 42
     return int(number)
 
 
-def main(path: str) -> None:
+def main(path: Path) -> None:
     filenames = os.listdir(path)
+    filenames = filter(lambda filename: ('file' in filename), filenames)
     filenames = sorted(filenames, key=extract_key)
     contents = []
     for filename in filenames:
-        with open(path + '/' + filename) as file:
+        with open(path / filename) as file:
             contents.append(file.read())
-    with open(path + '/result.txt', 'x') as file:
+    with open(path / 'result.txt', 'w') as file:
         file.write(', '.join(contents))
 
 
 if __name__ == '__main__':
-    main('./practice/2_python_part_2/files')
+    main(Path('practice/_2_python_part_2/files'))

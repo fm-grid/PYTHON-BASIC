@@ -69,7 +69,7 @@ Example:
     (['', '7', '--test=this_provider_does_not_exist'], False),
     ([''], False)
 ])
-def test_valid_data(capfd, test_input, is_valid):
+def test_main(capfd, test_input, is_valid):
     with patch('sys.argv', test_input):
         if is_valid:
             main()

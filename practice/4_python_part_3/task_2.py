@@ -40,6 +40,7 @@ Write tests for math_calculate function
 def test_good_operations(test_input, test_output):
     assert math_calculate(*test_input) == test_output
 
+
 @pytest.mark.parametrize('test_input', [
     ['this operation does not exist', 1, 2],
     ['__name__', 1, 2],

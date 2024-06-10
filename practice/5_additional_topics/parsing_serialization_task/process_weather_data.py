@@ -9,6 +9,8 @@ def define_parser() -> ArgumentParser:
     parser = ArgumentParser()
     parser.add_argument('-i', '--input', help='specify the directory containing folders for cities, if not specified the current working directory is used')
     parser.add_argument('-o', '--output', help='specify the path and filename of the output file, if not specified the result is written to stdout')
+    parser.add_argument('-c', '--country', help='specify the country name, "Spain" by default', default='Spain')
+    parser.add_argument('-d', '--date', help='specify the date (format: YYYY-MM-DD), 2021-09-25 by default', default='2021-09-25')
     return parser
 
 
@@ -69,8 +71,8 @@ def parse_cities(cities_raw_dict: dict) -> dict:
 def render_xml(country_data: dict) -> str:
     weather = etree.Element(
         'weather',
-        country='Spain',
-        date='2021-09-25'
+        country=country_data['country'],
+        date=country_data['date']
     )
     etree.SubElement(
         weather,
@@ -109,6 +111,8 @@ def main() -> None:
     input_dir, output_file = parse_args(namespace)
     cities_raw_dict = read_cities_data(input_dir)
     country_data = parse_cities(cities_raw_dict)
+    country_data['country'] = namespace.country
+    country_data['date'] = namespace.date
     xml = render_xml(country_data).decode()
     print_output(xml, output_file)
 

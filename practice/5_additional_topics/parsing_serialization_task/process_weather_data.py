@@ -60,7 +60,7 @@ def parse_cities(cities_raw_dict: dict) -> dict:
         cities_parsed_data[city_name] = parse_city(city_dict)
     return {
         'mean_temp': round(mean([data['mean_temp'] for _, data in cities_parsed_data.items()]), 2),
-        'mean_wind_speed': round(mean([data['mean_temp'] for _, data in cities_parsed_data.items()]), 2),
+        'mean_wind_speed': round(mean([data['mean_wind_speed'] for _, data in cities_parsed_data.items()]), 2),
         'coldest_city': min(cities_parsed_data.items(), key=lambda entry: entry[1]['mean_temp'])[0],
         'warmest_city': max(cities_parsed_data.items(), key=lambda entry: entry[1]['mean_temp'])[0],
         'windiest_city': max(cities_parsed_data.items(), key=lambda entry: entry[1]['mean_wind_speed'])[0],

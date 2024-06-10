@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 import json
 from statistics import mean
+from lxml import etree
 
 
 def define_parser() -> ArgumentParser:
@@ -65,13 +66,44 @@ def parse_cities(cities_raw_dict: dict) -> dict:
     }
 
 
+def render_xml(country_data: dict) -> str:
+    weather = etree.Element(
+        'weather',
+        country='Spain',
+        date='2021-09-25'
+    )
+    etree.SubElement(
+        weather,
+        'summary',
+        mean_temp=str(country_data['mean_temp']),
+        mean_wind_speed=str(country_data['mean_wind_speed']),
+        coldest_place=country_data['coldest_city'],
+        warmest_place=country_data['warmest_city'],
+        windiest_place=country_data['windiest_city']
+    )
+    cities = etree.SubElement(weather, 'cities')
+    for city_name, city_data in country_data['cities'].items():
+        etree.SubElement(
+            cities,
+            city_name.replace(' ', '_'),
+            mean_temp=str(city_data['mean_temp']),
+            mean_wind_speed=str(city_data['mean_wind_speed']),
+            min_temp=str(city_data['min_temp']),
+            min_wind_speed=str(city_data['min_wind_speed']),
+            max_temp=str(city_data['max_temp']),
+            max_wind_speed=str(city_data['max_wind_speed'])
+        )
+    return etree.tostring(weather, pretty_print=True)
+
+
 def main() -> None:
     parser = define_parser()
     namespace = parser.parse_args()
     input_dir, output_file = parse_args(namespace)
     cities_raw_dict = read_cities_data(input_dir)
     country_data = parse_cities(cities_raw_dict)
-    print(country_data)
+    xml = render_xml(country_data)
+    print(xml.decode())
 
 
 if __name__ == '__main__':

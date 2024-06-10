@@ -57,8 +57,8 @@ def parse_cities(cities_raw_dict: dict) -> dict:
     for city_name, city_dict in cities_raw_dict.items():
         cities_parsed_data[city_name] = parse_city(city_dict)
     return {
-        'mean_temp': mean([data['mean_temp'] for _, data in cities_parsed_data.items()]),
-        'mean_wind_speed': mean([data['mean_temp'] for _, data in cities_parsed_data.items()]),
+        'mean_temp': round(mean([data['mean_temp'] for _, data in cities_parsed_data.items()]), 2),
+        'mean_wind_speed': round(mean([data['mean_temp'] for _, data in cities_parsed_data.items()]), 2),
         'coldest_city': min(cities_parsed_data.items(), key=lambda entry: entry[1]['mean_temp'])[0],
         'warmest_city': max(cities_parsed_data.items(), key=lambda entry: entry[1]['mean_temp'])[0],
         'windiest_city': max(cities_parsed_data.items(), key=lambda entry: entry[1]['mean_wind_speed'])[0],
@@ -96,14 +96,21 @@ def render_xml(country_data: dict) -> str:
     return etree.tostring(weather, pretty_print=True)
 
 
+def print_output(xml: str, output_path: Path | None) -> None:
+    output_file = open(output_path, 'w') if output_path is not None else None
+    print(xml, file=output_file, end='')
+    if output_file is not None:
+        output_file.close()
+
+
 def main() -> None:
     parser = define_parser()
     namespace = parser.parse_args()
     input_dir, output_file = parse_args(namespace)
     cities_raw_dict = read_cities_data(input_dir)
     country_data = parse_cities(cities_raw_dict)
-    xml = render_xml(country_data)
-    print(xml.decode())
+    xml = render_xml(country_data).decode()
+    print_output(xml, output_file)
 
 
 if __name__ == '__main__':

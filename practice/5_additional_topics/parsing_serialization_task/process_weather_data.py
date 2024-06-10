@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 import json
-from statistics import mean
 from lxml import etree
+from pathlib import Path
+from statistics import mean
 
 
 def define_parser() -> ArgumentParser:

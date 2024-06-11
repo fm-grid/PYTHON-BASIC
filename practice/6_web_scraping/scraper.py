@@ -1,10 +1,12 @@
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 from memoization import cached
 import requests
 from requests import Response
 
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36'
+MAX_WORKERS = 64
 
 
 @cached
@@ -67,18 +69,20 @@ def get_employees(symbol: str) -> int:
 def get_sheet1_data() -> list[list[str]]:
     rows = []
     data = get_main_table()
-    for company in data:
-        symbol = company['Symbol']
-        ceo = get_ceo(symbol)
-        row = [
-            company['Name'],
-            symbol,
-            get_country(symbol),
-            str(get_employees(symbol)),
-            ceo['Name'],
-            ceo['Year Born']
-        ]
-        rows.append(row)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        def fn(company: dict) -> None:
+            symbol = company['Symbol']
+            ceo = get_ceo(symbol)
+            row = [
+                company['Name'],
+                symbol,
+                get_country(symbol),
+                str(get_employees(symbol)),
+                ceo['Name'],
+                ceo['Year Born']
+            ]
+            rows.append(row)
+        executor.map(fn, data)
     return rows
 
 
@@ -97,15 +101,17 @@ def get_total_cash(symbol: str) -> str:
 def get_sheet2_data() -> list[list[str]]:
     rows = []
     data = get_main_table()
-    for company in data:
-        symbol = company['Symbol']
-        change = get_52_week_change(symbol)
-        total_cash = get_total_cash(symbol)
-        row = [
-            company['Name'],
-            symbol,
-            change,
-            total_cash
-        ]
-        rows.append(row)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        def fn(company: dict) -> None:
+            symbol = company['Symbol']
+            change = get_52_week_change(symbol)
+            total_cash = get_total_cash(symbol)
+            row = [
+                company['Name'],
+                symbol,
+                change,
+                total_cash
+            ]
+            rows.append(row)
+        executor.map(fn, data)
     return rows

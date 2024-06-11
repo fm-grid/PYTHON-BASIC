@@ -98,27 +98,7 @@ def scrape_number_of_employees(symbol: str) -> int:
     return employees
 
 
-def render_row(widths: list[int], data: list[str]) -> str:
-    padded_data = [f' {s} ' for s in data]
-    aligned_data = [f'{s : <{w+2}}' for w, s in zip(widths, padded_data)]
-    return f'|{"|".join(aligned_data)}|'
-
-
-def print_table(title: str, columns: list[str], rows: list[list[str]]) -> None:
-    widths = []
-    for index, column in enumerate(columns):
-        max_width = max([len(row[index]) for row in rows] + [len(column)])
-        widths.append(max_width)
-    total_width = len(render_row(widths, columns))
-    print(f'{f'_{title.replace(' ', '_')}_' : ^{total_width}}'.replace(' ', '=').replace('_', ' '))
-    print(render_row(widths, columns))
-    for row in rows:
-        print('-' * total_width)
-        print(render_row(widths, row))
-    print('-' * total_width)
-
-
-def sheet1_rows() -> list[list[str]]:
+def scrape_sheet1_data() -> list[list[str]]:
     rows = []
     data = scrape_main_table()
     for company in data:
@@ -136,18 +116,47 @@ def sheet1_rows() -> list[list[str]]:
     return rows
 
 
-def print_sheet1() -> None:
-    title = '5 stocks with most youngest CEOs'
-    columns = ['Name', 'Code', 'Country', 'Employees', 'CEO Name', 'CEO Year Born']
-    rows = sheet1_rows()
-    rows = sorted(rows, key=lambda row: row[-1], reverse=True)
-    rows = rows[:5]
-    print_table(title, columns, rows)
+class Table:
+    def __init__(self, title: str, column_names: list[str], data: list[list[str]]) -> None:
+        self.title = title
+        self.column_names = column_names
+        self.data = data
+
+    def _render_row(widths: list[int], data: list[str]) -> str:
+        padded_data = [f' {s} ' for s in data]
+        aligned_data = [f'{s : <{w+2}}' for w, s in zip(widths, padded_data)]
+        return f'|{"|".join(aligned_data)}|'
+    
+    def __str__(self) -> str:
+        result = ''
+        widths = []
+        for index, column in enumerate(self.column_names):
+            max_width = max([len(row[index]) for row in self.data] + [len(column)])
+            widths.append(max_width)
+        total_width = len(Table._render_row(widths, self.column_names))
+        result += f'{f'_{self.title.replace(' ', '_')}_' : ^{total_width}}'.replace(' ', '=').replace('_', ' ') + '\n'
+        result += Table._render_row(widths, self.column_names) + '\n'
+        for row in self.data:
+            result += '-' * total_width + '\n'
+            result += Table._render_row(widths, row) + '\n'
+        result += '-' * total_width + '\n'
+        return result
+
+
+class Sheet1(Table):
+    def __init__(self):
+        self.title = '5 stocks with most youngest CEOs'
+        self.column_names = ['Name', 'Code', 'Country', 'Employees', 'CEO Name', 'CEO Year Born']
+        rows = scrape_sheet1_data()
+        rows = sorted(rows, key=lambda row: row[-1], reverse=True)
+        rows = rows[:5]
+        self.data = rows
 
 
 def main():
-    print_sheet1()
-        
+    sheet1 = Sheet1()
+    print(sheet1)
+
 
 if __name__ == '__main__':
     main()

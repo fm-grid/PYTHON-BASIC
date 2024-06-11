@@ -86,3 +86,9 @@ def get_52_week_change(symbol: str) -> str:
     page = request(f'https://finance.yahoo.com/quote/{symbol}/key-statistics/')
     soup = BeautifulSoup(page.content, 'html.parser')
     return soup.find('h3', text='Trading Information').find_parent().find_next_sibling().find('tbody').find_all('tr')[2].find_all('td')[1].get_text()
+
+
+def get_total_cash(symbol: str) -> str:
+    page = request(f'https://finance.yahoo.com/quote/{symbol}/key-statistics/')
+    soup = BeautifulSoup(page.content, 'html.parser')
+    return soup.find(text='Balance Sheet').find_parent().find_parent().find_parent().find_next_sibling().find('tbody').find_all('tr')[0].find_all('td')[1].get_text()

@@ -31,7 +31,7 @@ Links:
     - beautiful soup docs: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
     - lxml docs: https://lxml.de/
 """
-from scraper import get_sheet1_data, get_sheet2_data
+from scraper import get_sheet1_data, get_sheet2_data, get_sheet3_data
 
 
 class Table:
@@ -76,7 +76,18 @@ class Sheet2(Table):
         self.title = '10 stocks with best 52-Week Change'
         self.column_names = ['Name', 'Code', '52-Week Change', 'Total Cash']
         rows = get_sheet2_data()
+        rows = [r for r in rows if r[2] != '-']
         rows = sorted(rows, key=lambda row: float(row[2][:-1]), reverse=True)
+        rows = rows[:10]
+        self.data = rows
+
+
+class Sheet3(Table):
+    def __init__(self):
+        self.title = '10 largest holds of Blackrock Inc.'
+        self.column_names = ['Name', 'Code', 'Shares', 'Date Reported', '% Out', 'Value']
+        rows = get_sheet3_data()
+        rows = sorted(rows, key=lambda row: float(row[4][:-1]), reverse=True)
         rows = rows[:10]
         self.data = rows
 
@@ -86,6 +97,8 @@ def main():
     print(sheet1)
     sheet2 = Sheet2()
     print(sheet2)
+    sheet3 = Sheet3()
+    print(sheet3)
 
 
 if __name__ == '__main__':

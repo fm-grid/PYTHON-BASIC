@@ -115,3 +115,41 @@ def get_sheet2_data() -> list[list[str]]:
             rows.append(row)
         executor.map(fn, data)
     return rows
+
+
+def get_top_institutional_holders_table(symbol: str) -> list[dict]:
+    page = request(f'https://finance.yahoo.com/quote/{symbol}/holders/')
+    soup = BeautifulSoup(page.content, 'html.parser')
+    table = soup.find('h3', string='Top Institutional Holders').find_parent().find_next_sibling().find('table')
+    ths = table.find('thead').find('tr').find_all('th')
+    column_names = [th.get_text() for th in ths]
+    trs = table.find('tbody').find_all('tr')
+    holders = []
+    for tr in trs:
+        tds = tr.find_all('td')
+        row_data = {}
+        for index, td in enumerate(tds):
+            row_data[column_names[index]] = td.get_text().strip()
+        holders.append(row_data)
+    return holders
+
+
+def get_sheet3_data() -> list[list[str]]:
+    rows = []
+    data = get_main_table()
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        def fn(company: dict) -> None:
+            symbol = company['Symbol']
+            holders = get_top_institutional_holders_table(symbol)
+            holder = [h for h in holders if h['Holder'] == 'Blackrock Inc.'][0]
+            row = [
+                company['Name'],
+                symbol,
+                holder['Shares'],
+                holder['Date Reported'],
+                holder['% Out'],
+                holder['Value']
+            ]
+            rows.append(row)
+        executor.map(fn, data)
+    return rows

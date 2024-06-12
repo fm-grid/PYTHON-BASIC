@@ -2,7 +2,6 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 from memoization import cached
 import requests
-from requests import Response
 
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36'
@@ -10,14 +9,14 @@ MAX_WORKERS = 64
 
 
 @cached
-def request(url: str) -> Response:
+def request(url: str) -> bytes:
     page = requests.get(url, headers={'User-Agent': USER_AGENT})
-    return page
+    return page.content
 
 
 def get_main_table() -> list[dict]:
-    page = request('https://finance.yahoo.com/most-active')
-    soup = BeautifulSoup(page.content, 'html.parser')
+    content = request('https://finance.yahoo.com/most-active')
+    soup = BeautifulSoup(content, 'html.parser')
     rows_data = []
     trs = soup.find('table', class_='W(100%)').find('tbody').find_all('tr')
     for tr in trs:
@@ -31,8 +30,8 @@ def get_main_table() -> list[dict]:
 
 
 def get_ceo(symbol: str) -> dict:
-    page = request(f'https://finance.yahoo.com/quote/{symbol}/profile/')
-    soup = BeautifulSoup(page.content, 'html.parser')
+    content = request(f'https://finance.yahoo.com/quote/{symbol}/profile/')
+    soup = BeautifulSoup(content, 'html.parser')
     table = soup.find('div', class_='table-container').find('table')
     ths = table.find('thead').find('tr').find_all('th')
     column_names = [th.get_text() for th in ths]
@@ -49,16 +48,16 @@ def get_ceo(symbol: str) -> dict:
 
 
 def get_country(symbol: str) -> str:
-    page = request(f'https://finance.yahoo.com/quote/{symbol}/profile/')
-    soup = BeautifulSoup(page.content, 'html.parser')
+    content = request(f'https://finance.yahoo.com/quote/{symbol}/profile/')
+    soup = BeautifulSoup(content, 'html.parser')
     div = soup.find('div', class_='address').find_all('div')[-1]
     country = div.get_text()
     return country
 
 
 def get_employees(symbol: str) -> int:
-    page = request(f'https://finance.yahoo.com/quote/{symbol}/profile/')
-    soup = BeautifulSoup(page.content, 'html.parser')
+    content = request(f'https://finance.yahoo.com/quote/{symbol}/profile/')
+    soup = BeautifulSoup(content, 'html.parser')
     strong = soup.find('dl', class_='company-stats').find('strong')
     if strong is None:
         return 0
@@ -87,14 +86,14 @@ def get_sheet1_data() -> list[list[str]]:
 
 
 def get_52_week_change(symbol: str) -> str:
-    page = request(f'https://finance.yahoo.com/quote/{symbol}/key-statistics/')
-    soup = BeautifulSoup(page.content, 'html.parser')
+    content = request(f'https://finance.yahoo.com/quote/{symbol}/key-statistics/')
+    soup = BeautifulSoup(content, 'html.parser')
     return soup.find('h3', text='Trading Information').find_parent().find_next_sibling().find('tbody').find_all('tr')[1].find_all('td')[1].get_text()
 
 
 def get_total_cash(symbol: str) -> str:
-    page = request(f'https://finance.yahoo.com/quote/{symbol}/key-statistics/')
-    soup = BeautifulSoup(page.content, 'html.parser')
+    content = request(f'https://finance.yahoo.com/quote/{symbol}/key-statistics/')
+    soup = BeautifulSoup(content, 'html.parser')
     return soup.find(text='Balance Sheet').find_parent().find_parent().find_parent().find_next_sibling().find('tbody').find_all('tr')[0].find_all('td')[1].get_text()
 
 
@@ -118,8 +117,8 @@ def get_sheet2_data() -> list[list[str]]:
 
 
 def get_top_institutional_holders_table(symbol: str) -> list[dict]:
-    page = request(f'https://finance.yahoo.com/quote/{symbol}/holders/')
-    soup = BeautifulSoup(page.content, 'html.parser')
+    content = request(f'https://finance.yahoo.com/quote/{symbol}/holders/')
+    soup = BeautifulSoup(content, 'html.parser')
     table = soup.find('h3', string='Top Institutional Holders').find_parent().find_next_sibling().find('table')
     ths = table.find('thead').find('tr').find_all('th')
     column_names = [th.get_text() for th in ths]

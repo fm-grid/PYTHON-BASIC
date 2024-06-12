@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 import os
 from random import randint
 import sys
@@ -24,7 +24,7 @@ def func1(array: list):
         result = fib(number)
         with open(f'{OUTPUT_DIR}/{number}.txt', 'w') as file:
             file.write(str(result))
-    with ThreadPoolExecutor() as executor:
+    with ProcessPoolExecutor() as executor:
         executor.map(func, array)
 
 
@@ -34,7 +34,7 @@ def func2(result_file: str = RESULT_FILE):
         with open(f'{OUTPUT_DIR}/{filename}') as file:
             value = file.read()
             return (filename[:-4], value)
-    with ThreadPoolExecutor() as executor:
+    with ProcessPoolExecutor() as executor:
         data = executor.map(func, filenames)
         with open(result_file, 'x') as file:
             file.write('\n'.join([f'{d[0]},{d[1]}' for d in data]))

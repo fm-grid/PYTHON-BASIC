@@ -1,11 +1,26 @@
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
-from memoization import cached
+import diskcache
+import json
 import requests
 
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.79 Safari/537.36'
 MAX_WORKERS = 64
+CACHE_DIR = './.scraper_cache/'
+CACHE = diskcache.Cache(directory=CACHE_DIR)
+CACHE_TTL = 1 * 60 * 60 # 1 hour
+
+
+def cached(func):
+    def wrapper(*args, **kwargs):
+        inputs = {'args': args, 'kwargs': kwargs}
+        key = json.dumps(inputs)
+        if key not in CACHE:
+            CACHE.set(key, func(*args, **kwargs), expire=CACHE_TTL)
+        return CACHE[key]
+    
+    return wrapper
 
 
 @cached
